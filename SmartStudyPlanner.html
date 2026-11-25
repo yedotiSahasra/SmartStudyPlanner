@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Study Planner</title>
+<style>
+:root{--bg:#f5f6fc;--panel:#fff;--ink:#24243b;--muted:#85859b;--purple:#7562e9;--purple2:#eeeaff;--line:#ececf4;--green:#20a477;--red:#d65a63}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Segoe UI",Arial,sans-serif}
+button,input,select{font:inherit}button{border:0;border-radius:11px;padding:11px 16px;background:var(--purple);color:#fff;font-weight:600;cursor:pointer}button:hover{filter:brightness(.96)}button.secondary{background:#efeff6;color:#55546d}button.danger{background:#fff0f0;color:var(--red);padding:8px 11px}
+.app{min-height:100vh;display:flex}.sidebar{width:235px;background:#25243b;color:#fff;padding:28px 18px;flex-shrink:0}.brand{font-size:21px;font-weight:800;margin:4px 8px 38px}.brand span{color:#b8aaff}.navitem{padding:13px 14px;border-radius:11px;background:#393650;color:#fff;font-weight:600}.side-note{font-size:11px;letter-spacing:1.2px;color:#aaa8c0;margin:30px 10px 10px}
+main{width:min(1200px,100%);padding:32px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:25px}.top h1{font-size:28px;margin:0}.top p{color:var(--muted);margin:7px 0 0}.date{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 15px;color:#66657d}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:21px;box-shadow:0 5px 22px #28254a08}.card small{color:var(--muted)}.number{font-size:30px;font-weight:800;margin-top:9px}.layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,.85fr);gap:18px}.panel{margin-bottom:18px}.panel h2{font-size:18px;margin:0 0 17px}.row{display:flex;gap:9px;align-items:center}.row>*{min-width:0}.row input,.row select,.field{width:100%;padding:12px;border:1px solid #e3e3ed;border-radius:10px;background:#fff;color:var(--ink);outline:none}.row input:focus,.row select:focus{border-color:var(--purple)}.task{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task input{accent-color:var(--purple);width:17px;height:17px}.taskname{flex:1;overflow-wrap:anywhere}.task.done .taskname{text-decoration:line-through;color:#aaa}.tag{display:inline-block;font-size:11px;background:var(--purple2);color:#6653ce;padding:5px 8px;border-radius:7px;margin-right:5px}.muted{color:var(--muted);font-size:13px}.progress{height:10px;border-radius:20px;background:#eeeefa;overflow:hidden;margin:14px 0}.bar{height:100%;width:0;background:linear-gradient(90deg,#8b78f8,#b4a7ff);transition:width .25s}.tip{background:#f0edff;color:#5f50a8;padding:17px;border-radius:13px;line-height:1.55}.timer{text-align:center}.clock{font-size:54px;font-weight:800;letter-spacing:1px;color:var(--purple);margin:8px}.timer-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:520px}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line);font-size:14px}th{background:#f5f2ff;color:#6253b5}td input{width:100%;min-width:100px;padding:8px;border:1px solid var(--line);border-radius:8px}.empty{padding:16px 0;color:var(--muted)}.recommend{line-height:1.6;color:#6553c8;background:#f4f1ff;padding:14px;border-radius:12px}.footer{text-align:center;color:var(--muted);font-size:12px;padding:8px}
+@media(max-width:850px){.sidebar{width:190px}.layout{grid-template-columns:1fr}}@media(max-width:600px){.sidebar{display:none}main{padding:17px}.top h1{font-size:23px}.cards{gap:9px}.card{padding:15px}.number{font-size:25px}.row{flex-wrap:wrap}.row button{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar"><div class="brand">✦ Smart<span>Study</span></div><div class="navitem">▦ &nbsp; Dashboard</div><div class="side-note">YOUR PERSONAL STUDY SPACE</div><p class="muted" style="color:#c4c2d6;line-height:1.6;padding:0 10px">Plan a little. Focus a little. Improve every day.</p></aside>
+<main>
+<header class="top"><div><h1>My Dashboard 👋</h1><p>Small steps every day lead to big results.</p></div><div class="date" id="today"></div></header>
+<section class="cards">
+<div class="card"><small>Total tasks</small><div class="number" id="total">0</div></div>
+<div class="card"><small>Completed</small><div class="number" id="completed">0</div></div>
+<div class="card"><small>Pending</small><div class="number" id="pending">0</div></div>
+</section>
+<div class="layout">
+<div>
+<section class="panel"><h2>📚 My Study Tasks</h2>
+<div class="row" style="margin-bottom:12px"><select id="subjectInput" aria-label="Choose subject"><option>Computer Networks</option><option>DBMS</option><option>Java</option><option>Mathematics</option><option>Other</option></select><input id="taskInput" placeholder="What do you need to study?" maxlength="120"><button id="addBtn">+ Add task</button></div>
+<div id="taskList"></div></section>
+<section class="panel"><h2>🗓️ My Weekly Study Timetable</h2><p class="muted">Edit the subject and time for each day, then save your timetable.</p>
+<div class="table-wrap"><table><thead><tr><th>Day</th><th>Subject</th><th>Study time</th></tr></thead><tbody id="scheduleBody"></tbody></table></div>
+<button id="saveSchedule" style="margin-top:14px">Save timetable</button><span id="scheduleStatus" class="muted" style="margin-left:10px"></span></section>
+</div>
+<div>
+<section class="panel"><h2>📈 My Progress</h2><div id="progressText">0% completed</div><div class="progress"><div class="bar" id="progressBar"></div></div><p class="muted">Keep going! Every task counts.</p></section>
+<section class="panel timer"><h2>⏱️ Focus Timer</h2><div class="clock" id="timer">25:00</div><p class="muted">A 25-minute focus session</p><div class="timer-actions"><button id="startTimer">Start</button><button class="secondary" id="pauseTimer">Pause</button><button class="secondary" id="resetTimer">Reset</button></div></section>
+<section class="panel"><h2>📅 Exam Countdown</h2><label class="muted" for="examDate">Choose your exam date</label><div class="row" style="margin-top:9px"><input type="date" id="examDate"><button id="calcExam">Calculate</button></div><p id="examResult" class="recommend" style="margin-bottom:0">Choose a date to see your countdown.</p></section>
+<section class="panel"><h2>🧠 Smart Study Suggestion</h2><p id="recommendation" class="recommend">Add some tasks to get a study suggestion.</p><button id="getRecommendation">Get suggestion</button></section>
+<div class="tip"><strong>💡 Study tip</strong><br>Break big topics into small tasks. Focus on one task at a time.</div>
+</div>
+</div>
+<div class="footer">Smart Study Planner · Your progress is saved in this browser on this device.</div>
+</main></div>
+<script>
+const $ = id => document.getElementById(id);
+let tasks = [];
+try { tasks = JSON.parse(localStorage.getItem("studyTasks") || "[]"); if (!Array.isArray(tasks)) tasks=[]; } catch { tasks=[]; }
+function saveTasks(){ localStorage.setItem("studyTasks", JSON.stringify(tasks)); }
+$("today").textContent = new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"short",year:"numeric"});
+function renderTasks(){
+ const list=$("taskList"); list.innerHTML="";
+ if(!tasks.length){list.innerHTML='<p class="empty">No tasks yet. Add your first study task above!</p>';}
+ tasks.forEach((task,i)=>{
+  const row=document.createElement("div"); row.className="task"+(task.completed?" done":"");
+  const check=document.createElement("input"); check.type="checkbox"; check.checked=!!task.completed; check.setAttribute("aria-label","Mark task complete"); check.addEventListener("change",()=>{tasks[i].completed=check.checked;saveTasks();renderTasks();});
+  const name=document.createElement("div"); name.className="taskname"; const tag=document.createElement("span");tag.className="tag";tag.textContent=task.subject||"Other"; name.append(tag,document.createTextNode(task.text));
+  const del=document.createElement("button");del.className="danger";del.textContent="Delete";del.addEventListener("click",()=>{tasks.splice(i,1);saveTasks();renderTasks();});
+  row.append(check,name,del);list.append(row);
+ });
+ const total=tasks.length,done=tasks.filter(t=>t.completed).length,pct=total?Math.round(done/total*100):0;
+ $("total").textContent=total;$("completed").textContent=done;$("pending").textContent=total-done;$("progressText").textContent=pct+"% completed";$("progressBar").style.width=pct+"%";
+}
+function addTask(){const text=$("taskInput").value.trim();if(!text){alert("Please enter a study task.");$("taskInput").focus();return;}tasks.push({text,subject:$("subjectInput").value,completed:false});$("taskInput").value="";saveTasks();renderTasks();}
+$("addBtn").addEventListener("click",addTask);$("taskInput").addEventListener("keydown",e=>{if(e.key==="Enter")addTask();});
+const days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const defaultSchedule=[["Computer Networks","5 PM - 6 PM"],["DBMS","5 PM - 6 PM"],["Java","5 PM - 6 PM"],["Mathematics","5 PM - 6 PM"],["Computer Networks","5 PM - 6 PM"],["DBMS Revision","10 AM - 11 AM"],["Weekly Revision","10 AM - 11 AM"]];
+let schedule;try{schedule=JSON.parse(localStorage.getItem("studySchedule"))||defaultSchedule;}catch{schedule=defaultSchedule;}
+function renderSchedule(){$("scheduleBody").innerHTML="";days.forEach((day,i)=>{const tr=document.createElement("tr");const td=document.createElement("td");td.textContent=day;const s=document.createElement("td"),t=document.createElement("td");const si=document.createElement("input"),ti=document.createElement("input");si.value=schedule[i]?.[0]||"";ti.value=schedule[i]?.[1]||"";si.dataset.day=i;ti.dataset.day=i;si.dataset.kind="subject";ti.dataset.kind="time";s.append(si);t.append(ti);tr.append(td,s,t);$("scheduleBody").append(tr);});}
+$("saveSchedule").addEventListener("click",()=>{schedule=days.map((_,i)=>{const row=$("scheduleBody").querySelectorAll("tr")[i];return [row.cells[1].querySelector("input").value,row.cells[2].querySelector("input").value];});localStorage.setItem("studySchedule",JSON.stringify(schedule));$("scheduleStatus").textContent="Saved!";});
+let timeLeft=25*60,timerId=null;
+function showTimer(){$("timer").textContent=String(Math.floor(timeLeft/60)).padStart(2,"0")+":"+String(timeLeft%60).padStart(2,"0");}
+$("startTimer").addEventListener("click",()=>{if(timerId!==null)return;timerId=setInterval(()=>{if(timeLeft>0){timeLeft--;showTimer();}else{clearInterval(timerId);timerId=null;alert("Focus session complete! Take a short break. 🎉");}},1000);});
+$("pauseTimer").addEventListener("click",()=>{clearInterval(timerId);timerId=null;});
+$("resetTimer").addEventListener("click",()=>{clearInterval(timerId);timerId=null;timeLeft=25*60;showTimer();});
+$("calcExam").addEventListener("click",()=>{const value=$("examDate").value;if(!value){alert("Please choose your exam date.");return;}const today=new Date();today.setHours(0,0,0,0);const exam=new Date(value+"T00:00:00");const diff=Math.round((exam-today)/86400000);$("examResult").textContent=diff<0?"That exam date has already passed.":diff===0?"Your exam is today. Good luck! 🎯":diff+" day(s) left for your exam! 🎯";});
+function getRecommendation(){const pending=tasks.filter(t=>!t.completed);if(!pending.length){$("recommendation").textContent=tasks.length?"All your tasks are complete. Great work! 🎉":"Add a few study tasks first, and I'll suggest what to focus on.";return;}const counts={};pending.forEach(t=>{const s=t.subject||"Other";counts[s]=(counts[s]||0)+1;});const best=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||a.localeCompare(b))[0];$("recommendation").textContent="You have "+counts[best]+" pending task(s) in "+best+". Consider studying this subject first.";}
+$("getRecommendation").addEventListener("click",getRecommendation);
+renderTasks();renderSchedule();showTimer();
+</script>
+</body>
+</html>
